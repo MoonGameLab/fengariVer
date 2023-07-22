@@ -18,9 +18,10 @@ __FENGARIV_LUAJIT_DIR="${__FENGARIV_DIR}/luajit"
 __FENGARIV_LUAJIT_DEFLT_FILE="${__FENGARIV_DIR}/default_luajit"
 __FENGARIV_LUAROCKS_DIR="${__FENGARIV_DIR}/luarocks"
 __FENGARIV_LUAROCKS_DEFLT_FILE="${__FENGARIV_DIR}/default_luarocks"
+__FENGARIV_LOVE_DIR="${__FENGARIV_DIR}/love"
+__FENGARIV_LOVE_DEFLT_FILE="${__FENGARIV_DIR}/default_love"
 
-
-_ARR_DIRS=( "${__FENGARIV_DIR}" "${__FENGARIV_SRC_DIR}" "${__FENGARIV_LUA_DIR}" "${__FENGARIV_LUA_DEFLT_FILE}" "${__FENGARIV_LUAJIT_DIR}" "${__FENGARIV_LUAJIT_DEFLT_FILE}" "${__FENGARIV_LUAROCKS_DIR}" "${__FENGARIV_LUAROCKS_DEFLT_FILE}" )
+_ARR_DIRS=( "${__FENGARIV_DIR}" "${__FENGARIV_SRC_DIR}" "${__FENGARIV_LUA_DIR}" "${__FENGARIV_LUA_DEFLT_FILE}" "${__FENGARIV_LUAJIT_DIR}" "${__FENGARIV_LUAJIT_DEFLT_FILE}" "${__FENGARIV_LUAROCKS_DIR}" "${__FENGARIV_LUAROCKS_DEFLT_FILE}" "${__FENGARIV_LOVE_DIR}" "${__FENGARIV_LOVE_DEFLT_FILE}")
 
 
 # Prints whats supposed to be an error.
@@ -86,6 +87,7 @@ _EXISTS()
   luaPath=$(command -v lua)
   luajitPath=$(command -v luajit)
   luarocksPath=$(command -v luarocks)
+  lovePath=$(command -v love)
   
   if [ "${1}" = "lua" ]
   then
@@ -111,6 +113,16 @@ _EXISTS()
   if [ "${1}" = "luarocks" ]
   then
     if [ "${luarocksPath#$__FENGARIV_LUAROCKS_DIR}" != "${luarocksPath}" ]
+    then
+      return 0
+    else
+      return 1
+    fi
+  fi
+
+  if [ "${1}" = "love" ]
+  then
+    if [ "${lovePath#$__FENGARIV_LOVE_DIR}" != "${lovePath}" ]
     then
       return 0
     else

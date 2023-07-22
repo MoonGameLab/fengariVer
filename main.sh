@@ -23,6 +23,9 @@ __FENGARIV_LOVE_DEFLT_FILE="${__FENGARIV_DIR}/default_love"
 
 _ARR_DIRS=( "${__FENGARIV_DIR}" "${__FENGARIV_SRC_DIR}" "${__FENGARIV_LUA_DIR}" "${__FENGARIV_LUA_DEFLT_FILE}" "${__FENGARIV_LUAJIT_DIR}" "${__FENGARIV_LUAJIT_DEFLT_FILE}" "${__FENGARIV_LUAROCKS_DIR}" "${__FENGARIV_LUAROCKS_DEFLT_FILE}" "${__FENGARIV_LOVE_DIR}" "${__FENGARIV_LOVE_DEFLT_FILE}")
 
+declare -A __path_pkg
+declare -A __path_pkg_cr
+__path_pkg+=( ["lua"]=${__FENGARIV_LUA_DIR} ["luajit"]=${__FENGARIV_LUAJIT_DIR} ["luarocks"]=${__FENGARIV_LUAROCKS_DIR} ["love"]=${__FENGARIV_LOVE_DIR}  )
 
 # Prints whats supposed to be an error.
 _ERROR()
@@ -77,62 +80,44 @@ _INIT_FENGARI()
 
 }
 
-_EXISTS()
+_GET_PATHS()
 {
-  local luaPath
-  local luajitPath
-  local luarocksPath
 
-  # see if paths exist
-  luaPath=$(command -v lua)
-  luajitPath=$(command -v luajit)
-  luarocksPath=$(command -v luarocks)
-  lovePath=$(command -v love)
-  
-  if [ "${1}" = "lua" ]
-  then
-    #The parameter expansion removes the prefix to see if the result is different from the original
-    if [ "${luaPath#$__FENGARIV_LUA_DIR}" != "${luaPath}" ]
+  for key in "${!__path_pkg[@]}"
+  do
+    if [ -v "__path_pkg_cr[${key}]" ]
     then
-      return 0
+      __path_pkg_cr[${key}]=$(command -v ${key})
     else
-      return 1
+      __path_pkg_cr+=( ["${key}"]="" )
+      __path_pkg_cr[${key}]=$(command -v ${key})
     fi
-  fi
+  done
 
-  if [ "${1}" = "luajit" ]
-  then
-    if [ "${luajitPath#$__FENGARIV_LUAJIT_DIR}" != "${luajitPath}" ]
-    then
-      return 0
-    else
-      return 1
-    fi
-  fi
-
-  if [ "${1}" = "luarocks" ]
-  then
-    if [ "${luarocksPath#$__FENGARIV_LUAROCKS_DIR}" != "${luarocksPath}" ]
-    then
-      return 0
-    else
-      return 1
-    fi
-  fi
-
-  if [ "${1}" = "love" ]
-  then
-    if [ "${lovePath#$__FENGARIV_LOVE_DIR}" != "${lovePath}" ]
-    then
-      return 0
-    else
-      return 1
-    fi
-  fi
-
-  type "${1}" > /dev/null 2>&1
 }
 
+_EXISTS()
+{
+
+  _GET_PATHS
+
+  for key in "${!__path_pkg_cr[@]}"
+  do
+    if [ "${1}" = "${key}" ]
+    then
+      #The parameter expansion removes the prefix to see if the result is different from the original
+      if [ "${__path_pkg_cr[${key}]#$__path_pkg[${key}]}" != "${__path_pkg_cr[${key}]}" ]
+      then
+        return 0
+      else
+        return 1
+      fi
+    fi
+  done
+
+  type "${1}" > /dev/null 2>&1
+
+}
 
 _DOWNLOAD()
 {

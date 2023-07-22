@@ -139,6 +139,51 @@ _DOWNLOAD()
 
 }
 
+_APPEND_PATH()
+{
+  export PATH="${1}:${PATH}"
+}
+
+_TAR_UNPACK()
+{
+  _PRINT_TEXT_FORMATTED "Unpacking ${1}"
+
+  if _EXISTS "tar"
+  then
+    _EXEC_CMD tar xvzf "${1}"
+  else
+    _ERROR "'tar' must be installed."
+  fi
+}
+
+_DOWNLOAD_UNPACK()
+{
+  local unpackDirName=$1
+  local archiveName=$2
+  local url=$3
+
+  if [ -e "${unpackDirName}" ]
+  then
+    _PRINT_TEXT_FORMATTED "${unpackDirName} is already downloaded. Download again? [Y/n]:"
+    read r choice
+    case $choice in
+      [yY][eE][sS] | [yY] )
+        _EXEC_CMD rm -r "${unpackDirName}" ;;
+    esac
+  fi
+
+  if [ ! -e "${unpackDirName}" ]
+  then
+
+    _PRINT_TEXT_FORMATTED "Downloading ${unpackDirName}"
+    _DOWNLOAD "${url}"
+    _PRINT_TEXT_FORMATTED "Extracting archive..."
+    _TAR_UNPACK "${archiveName}"
+    _EXEC_CMD rm "${archiveName}"
+
+  fi
+
+}
 
 
 

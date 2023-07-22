@@ -59,6 +59,8 @@ _PRINT_TEXT_FORMATTED()
 
 _INIT_FENGARI()
 {
+  _LUA_VER=1
+  
   _d_present_dir=$(pwd)
 
   for path in "${_ARR_DIRS[@]}"
@@ -70,9 +72,62 @@ _INIT_FENGARI()
     fi
   done
 
-  _LUA_VER=1
-
   _EXEC_CMD cd "${_d_present_dir}"
+
+}
+
+_EXISTS()
+{
+  local luaPath
+  local luajitPath
+  local luarocksPath
+
+  # see if paths exist
+  luaPath=$(command -v lua)
+  luajitPath=$(command -v luajit)
+  luarocksPath=$(command -v luarocks)
+  
+  if [ "${1}" = "lua" ]
+  then
+    #The parameter expansion removes the prefix to see if the result is different from the original
+    if [ "${luaPath#$__FENGARIV_LUA_DIR}" != "${luaPath}" ]
+    then
+      return 0
+    else
+      return 1
+    fi
+  fi
+
+  if [ "${1}" = "luajit" ]
+  then
+    if [ "${luajitPath#$__FENGARIV_LUAJIT_DIR}" != "${luajitPath}" ]
+    then
+      return 0
+    else
+      return 1
+    fi
+  fi
+
+  if [ "${1}" = "luarocks" ]
+  then
+    if [ "${luarocksPath#$__FENGARIV_LUAROCKS_DIR}" != "${luarocksPath}" ]
+    then
+      return 0
+    else
+      return 1
+    fi
+  fi
+
+  type "${1}" > /dev/null 2>&1
+}
+
+
+_DOWNLOAD()
+{
+  local url=$1
+  local filename=${url##*/}
+
+
 
 }
 

@@ -127,7 +127,15 @@ _DOWNLOAD()
   local url=$1
   local filename=${url##*/}
 
-
+  if _EXISTS "wget"
+  then
+    _EXEC_CMD wget -O "$filename" "${url}"
+  elif _EXISTS "curl"
+  then
+    _EXEC_CMD curl -fLO "${url}"
+  else
+    _ERROR "'wget' or 'curl' must be installed."
+  fi
 
 }
 

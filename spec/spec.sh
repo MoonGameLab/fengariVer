@@ -25,6 +25,15 @@ _PRINT_BOLD "Hello bold" #s
 
 
 _INIT_FENGARI #s
+if _EXISTS "lua"
+then  
+    _PRINT_BOLD "EXISTS"
+else
+    _PRINT_BOLD "Does not EXISTS"
 
-_ERROR "Error printing test." #s
+fi
+
+#_DOWNLOAD "https://www.lua.org/ftp/lua-5.4.6.tar.gz" #OK
+
+_ERROR "\nError printing test." #s
 

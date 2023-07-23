@@ -36,9 +36,9 @@ fi
 # _GET_PLATFORM
 
 
-_EXISTS "lua"
+#_EXISTS "lua"
 
-# _GET_PKG_VERSION "lua"
+_GET_PKG_VERSION "lua"
 
 #_DOWNLOAD "https://www.lua.org/ftp/lua-5.4.6.tar.gz" #OK
 

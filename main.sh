@@ -221,7 +221,21 @@ _GET_URL()
 _GET_PKG_VERSION()
 {
   local version
+  
+  if [ -v "__path_pkg["${1}"]" ]
+  then
+    version=$(command -v "${1}")
 
+    if _EXISTS "${1}"
+    then
+      version=${version#$__path_pkg["${1}"]/}
+      echo "${version%/bin/${1}}"
+    else
+      return 1
+    fi
+  else
+    _ERROR "Package not supported :: See intructions on how to support a new package."
+  fi
 }
 
 

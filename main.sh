@@ -98,15 +98,17 @@ _GET_PATHS()
 
 _EXISTS()
 {
-
   _GET_PATHS
-
+  
   for key in "${!__path_pkg_cr[@]}"
   do
     if [ "${1}" = "${key}" ]
     then
+      local _path=${__path_pkg_cr[${key}]}
+      local _DIR=${__path_pkg[${key}]}
+
       #The parameter expansion removes the prefix to see if the result is different from the original
-      if [ "${__path_pkg_cr[${key}]#$__path_pkg[${key}]}" != "${__path_pkg_cr[${key}]}" ]
+      if [ "${_path#$_DIR}" != "${__path_pkg_cr[${key}]}" ]
       then
         return 0
       else
@@ -114,9 +116,8 @@ _EXISTS()
       fi
     fi
   done
-
+  
   type "${1}" > /dev/null 2>&1
-
 }
 
 _DOWNLOAD()
@@ -181,6 +182,48 @@ _DOWNLOAD_UNPACK()
   fi
 
 }
+
+# Remove all occurrences of a specified prefix
+_REMOVE_PREV_PATHS()
+{
+
+  local prefix=$1
+
+  local newPath
+  newPath=$(echo "${PATH}" | sed \
+    -e "s#${prefix}/[^/]*/bin[^:]*:##g" \
+    -e "s#:${prefix}/[^/]*/bin[^:]*##g" \
+    -e "s#${prefix}/[^/]*/bin[^:]*##g")
+
+  export PATH=$newPath
+}
+
+
+_GET_PLATFORM()
+{
+  case $(uname -s 2>/dev/null) in
+    Linux )                    echo "linux" ;;
+    CYGWIN* | MINGW* | MSYS* ) echo "mingw" ;;
+    * )                        echo "unknown or unsupported."
+  esac
+}
+
+_GET_URL()
+{
+  if curl -V >/dev/null 2>&1
+  then
+    curl -fsSL "$1"
+  else
+    wget -qO- "$1"
+  fi
+}
+
+_GET_PKG_VERSION()
+{
+  local version
+
+}
+
 
 
 

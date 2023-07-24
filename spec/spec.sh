@@ -33,12 +33,12 @@ else
     _PRINT_TEXT_FORMATTED "Does not EXIST"
 fi
 
-# _GET_PLATFORM
+_GET_PLATFORM
 
 
 #_EXISTS "lua"
 
-_GET_PKG_VERSION "lua"
+#_GET_PKG_VERSION_SHORT "lua"
 
 #_DOWNLOAD "https://www.lua.org/ftp/lua-5.4.6.tar.gz" #OK
 

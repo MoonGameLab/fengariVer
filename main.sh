@@ -9,23 +9,41 @@ _VERSION="0.1"
 _LUA_VER=0
 
 
-# DIRS && FILES
+# FENGARIV Location
 __FENGARIV_DIR="${HOME}/.fengariv"
-__FENGARIV_SRC_DIR="${__FENGARIV_DIR}/src"
-__FENGARIV_LUA_DIR="${__FENGARIV_DIR}/lua"
-__FENGARIV_LUA_DEFLT_FILE="${__FENGARIV_DIR}/default_lua"
-__FENGARIV_LUAJIT_DIR="${__FENGARIV_DIR}/luajit"
-__FENGARIV_LUAJIT_DEFLT_FILE="${__FENGARIV_DIR}/default_luajit"
-__FENGARIV_LUAROCKS_DIR="${__FENGARIV_DIR}/luarocks"
-__FENGARIV_LUAROCKS_DEFLT_FILE="${__FENGARIV_DIR}/default_luarocks"
-__FENGARIV_LOVE_DIR="${__FENGARIV_DIR}/love"
-__FENGARIV_LOVE_DEFLT_FILE="${__FENGARIV_DIR}/default_love"
 
-_ARR_DIRS=( "${__FENGARIV_DIR}" "${__FENGARIV_SRC_DIR}" "${__FENGARIV_LUA_DIR}" "${__FENGARIV_LUA_DEFLT_FILE}" "${__FENGARIV_LUAJIT_DIR}" "${__FENGARIV_LUAJIT_DEFLT_FILE}" "${__FENGARIV_LUAROCKS_DIR}" "${__FENGARIV_LUAROCKS_DEFLT_FILE}" "${__FENGARIV_LOVE_DIR}" "${__FENGARIV_LOVE_DEFLT_FILE}")
+
+_PACKAGES=(
+  "lua"
+  "luajit"
+  "luarocks"
+  "love"
+  "moon"
+)
+
+declare -A _ARR_DIRS
+
+_INIT_DIRS()
+{
+  for pkg in "${_PACKAGES[@]}"
+  do    
+    _ARR_DIRS+=( ["${pkg}_dir"]="${__FENGARIV_DIR}/${pkg}" )
+    _ARR_DIRS+=( ["${pkg}_default"]="${__FENGARIV_DIR}/default_${pkg}" )    
+  done
+}
+_INIT_DIRS
+
 
 declare -A __path_pkg
 declare -A __path_pkg_cr
-__path_pkg+=( ["lua"]=${__FENGARIV_LUA_DIR} ["luajit"]=${__FENGARIV_LUAJIT_DIR} ["luarocks"]=${__FENGARIV_LUAROCKS_DIR} ["love"]=${__FENGARIV_LOVE_DIR}  )
+
+__path_pkg+=( 
+    ["lua"]=${_ARR_DIRS["lua_dir"]} 
+    ["luajit"]=${_ARR_DIRS["luajit_dir"]} 
+    ["luarocks"]=${_ARR_DIRS["luarocks_dir"]} 
+    ["love"]=${_ARR_DIRS["love_dir"]} 
+    ["moon"]=${_ARR_DIRS["moon_dir"]} 
+  )
 
 # Prints whats supposed to be an error.
 _ERROR()
@@ -236,6 +254,25 @@ _GET_PKG_VERSION()
   else
     _ERROR "Package not supported :: See intructions on how to support a new package."
   fi
+}
+
+_GET_PKG_VERSION_SHORT()
+{
+  local version=""
+
+  if [ -v "__path_pkg["${1}"]" ]
+  then
+    version=$(command -v "${1}")
+
+    if _EXISTS "${1}"
+    then
+      version=$("${1}" -e 'print(_VERSION:sub(5))')
+      echo "${version}"
+    fi
+  else
+    _ERROR "Package not supported :: See intructions on how to support a new package."
+  fi
+
 }
 
 

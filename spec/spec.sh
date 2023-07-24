@@ -1,9 +1,9 @@
 source ../main.sh
 
 
-# _EXEC_CMD ls "../" #s
+_EXEC_CMD ls "../" #s
 
-# _PRINT_BOLD "Hello bold" #s
+_PRINT_BOLD "Hello bold" #s
 
 
 # {
@@ -24,26 +24,23 @@ source ../main.sh
 # # } #s
 
 
-_INIT_FENGARI #s
+# _INIT_FENGARI #s
 
-# if _EXISTS "lua"
-# then  
-#     _PRINT_TEXT_FORMATTED "EXISTS"
-# else
-#     _PRINT_TEXT_FORMATTED "Does not EXIST"
-# fi
+if _EXISTS "lua"
+then  
+    _PRINT_TEXT_FORMATTED "EXISTS"
+else
+    _PRINT_TEXT_FORMATTED "Does not EXIST"
+fi
 
-# _GET_PLATFORM
+_GET_PLATFORM
 
-#INSTALL_LUA 5.1
-USE_LUA 5.1
-_EXEC_CMD lua -v
 
 #_EXISTS "lua"
 
 #_GET_PKG_VERSION_SHORT "lua"
 
-#_DOWNLOAD_UNPACK "lua-5.4.6" "lua-5.4.6.tar.gz" "https://www.lua.org/ftp/lua-5.4.6.tar.gz" #OK
+#_DOWNLOAD "https://www.lua.org/ftp/lua-5.4.6.tar.gz" #OK
 
-#_ERROR "\nError printing test." #s
+_ERROR "\nError printing test." #s
 

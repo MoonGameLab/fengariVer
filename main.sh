@@ -18,7 +18,7 @@ _PACKAGES=(
   "luajit"
   "luarocks"
   "love"
-  "moon"
+  # "moon" Use luarocks for that
 )
 
 declare -A _ARR_DIRS
@@ -37,7 +37,7 @@ _INIT_DIRS
 declare -A __path_pkg
 declare -A __path_pkg_cr
 
-__path_pkg+=( 
+__path_pkg+=( # TODO: Should be refactored later to be dynamic.
     ["lua"]=${_ARR_DIRS["lua_dir"]} 
     ["luajit"]=${_ARR_DIRS["luajit_dir"]} 
     ["luarocks"]=${_ARR_DIRS["luarocks_dir"]} 
@@ -157,7 +157,10 @@ _DOWNLOAD()
 
 _APPEND_PATH()
 {
+  _PRINT_TEXT_FORMATTED "IN APPEND PATH"
+  _PRINT_TEXT_FORMATTED "${1}" 
   export PATH="${1}:${PATH}"
+  _PRINT_TEXT_FORMATTED "${PATH}"
 }
 
 _TAR_UNPACK()
@@ -181,10 +184,11 @@ _DOWNLOAD_UNPACK()
   if [ -e "${unpackDirName}" ]
   then
     _PRINT_TEXT_FORMATTED "${unpackDirName} is already downloaded. Download again? [Y/n]:"
-    read r choice
+    read -r choice
     case $choice in
       [yY][eE][sS] | [yY] )
-        _EXEC_CMD rm -r "${unpackDirName}" ;;
+        _EXEC_CMD rm -r "${unpackDirName}"
+        ;;
     esac
   fi
 
@@ -276,5 +280,85 @@ _GET_PKG_VERSION_SHORT()
 }
 
 
+_FENGARIV_UNINSTALL()
+{
+  local pkgName=$1
+  local pkgPath=$1
+  local pkgDir=$1
+
+  _PRINT_TEXT_FORMATTED "Uninstalling ${pkgName}"
+
+  _EXEC_CMD cd "${pkgPath}"
+  if [ ! -e "${pkgDir}" ]
+  then
+    _ERROR "${pkgName} is not installed. You got baited."
+  fi
+
+  _EXEC_CMD rm -r "${pkgDir}"
+  _PRINT_TEXT_FORMATTED "${pkgName} was successfully unistalled."
+}
 
 
+
+# LUA 
+
+INSTALL_LUA()
+{
+
+  local version=$1
+  local luaDirName="lua-${version}"
+  local archiveName="${luaDirName}.tar.gz"
+  local url="http://www.lua.org/ftp/${archiveName}"
+
+  _PRINT_TEXT_FORMATTED "Installing ${luaDirName}"
+  local luaDir=${_ARR_DIRS["lua_dir"]}
+  _EXEC_CMD cd "${luaDir}"
+  _DOWNLOAD_UNPACK "${luaDirName}" "${archiveName}" "${url}"
+
+  _PRINT_TEXT_FORMATTED "Detecting Platform..."
+  
+  platform=$(_GET_PLATFORM)
+  if [ "${platform}" = "unknown" ]
+  then
+    _PRINT_TEXT_FORMATTED "Unable to detect platform :: Using default 'posix'"
+    platform=posix
+  else
+    _PRINT_TEXT_FORMATTED "Installing for ${platform}"
+  fi
+
+  _EXEC_CMD cd "${luaDirName}"
+  _PRINT_TEXT_FORMATTED "Compiling ${luaDirName}"
+  _EXEC_CMD make "${platform}" install INSTALL_TOP="${luaDir}/${version}"
+
+  _PRINT_TEXT_FORMATTED "${luaDirName} successfully installed."
+
+}
+
+USE_LUA()
+{
+  local version=$1
+  local luaName="lua-${version}"
+  local luaDir=${_ARR_DIRS["lua_dir"]}
+
+  _EXEC_CMD cd "${luaDir}"
+
+  if [ ! -e "${version}" ]
+  then
+    _PRINT_TEXT_FORMATTED "${luaName} is not installed, Do you want to install it? [Y/n]:"
+    read -r choice
+    case choice in
+      [yY][eE][sS] | [yY] )
+          INSTALL_LUA "${version}"
+          ;;
+      * )
+          _ERROR "Unable to use ${luaName}"
+    esac
+    return
+  fi
+
+  _REMOVE_PREV_PATHS "${luaDir}"
+  _PRINT_TEXT_FORMATTED "${luaDir}/${version}/bin"
+  _APPEND_PATH "${luaDir}/${version}/bin"
+
+  _PRINT_TEXT_FORMATTED "Switched to ${luaName} successfully."
+}

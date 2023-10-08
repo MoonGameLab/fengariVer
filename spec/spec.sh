@@ -1,5 +1,7 @@
+#!/bin/sh
+
 source ../main.sh
-source ./luaver
+
 
 
 # _EXEC_CMD ls "../" #s
@@ -25,7 +27,7 @@ source ./luaver
 # # } #s
 
 
-_INIT_FENGARI #s
+#_INIT_FENGARI
 
 # if _EXISTS "lua"
 # then  
@@ -37,14 +39,16 @@ _INIT_FENGARI #s
 # _GET_PLATFORM
 
 #INSTALL_LUA 5.1
-USE_LUA 5.1
+#USE_LUA 5.1
 #__luaver_use_lua 5.1
-_EXEC_CMD lua -v
+#_EXEC_CMD lua -v
 
+#INSTALL_LUA 5.1
+#INSTALL_LUAROCKS 5.1
 
 #_EXISTS "lua"
 
-#_GET_PKG_VERSION_SHORT "lua"
+_GET_PKG_VERSION_SHORT "lua"
 
 #_DOWNLOAD_UNPACK "lua-5.4.6" "lua-5.4.6.tar.gz" "https://www.lua.org/ftp/lua-5.4.6.tar.gz" #OK
 

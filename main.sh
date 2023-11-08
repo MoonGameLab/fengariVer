@@ -33,6 +33,7 @@ _INIT_DIRS()
 }
 _INIT_DIRS
 
+SRC_DIR="${__FENGARIV_DIR}/src"
 
 declare -A __path_pkg
 declare -A __path_pkg_cr
@@ -94,6 +95,12 @@ _INIT_FENGARI()
     fi
   done
 
+  _PRINT_BOLD "Creating directory at path : ${SRC_DIR}"
+  if [ ! -e "${path}" ]
+  then
+    _EXEC_CMD mkdir "${SRC_DIR}"
+  fi
+
   _EXEC_CMD cd "${_d_present_dir}"
 
 }
@@ -145,7 +152,10 @@ _DOWNLOAD()
 
   if _EXISTS "wget"
   then
-    _EXEC_CMD wget -O "$filename" "${url}"
+    _PRINT_TEXT_FORMATTED "loool " "${filename}" "${url}"
+    _PRINT_TEXT_FORMATTED "${filename}" 
+    _PRINT_TEXT_FORMATTED "${url}" 
+    _EXEC_CMD wget -O "${filename}" "${url}"
   elif _EXISTS "curl"
   then
     _EXEC_CMD curl -fLO "${url}"
@@ -180,7 +190,7 @@ _DOWNLOAD_UNPACK()
   local unpackDirName=$1
   local archiveName=$2
   local url=$3
-
+  
   if [ -e "${unpackDirName}" ]
   then
     _PRINT_TEXT_FORMATTED "${unpackDirName} is already downloaded. Download again? [Y/n]:"
@@ -300,7 +310,23 @@ _FENGARIV_UNINSTALL()
 
 
 
-# LUA 
+# LUA
+
+GET_LUA_VERSION_LUAROCKS()
+{
+  local version
+  version=$(command -v luarocks)
+
+  if _EXISTS "luarocks"
+  then
+    version=${version#${_ARR_DIRS["luarocks_dir"]}}
+    version=${version%/bin/luarocks}
+    echo "${version#*_}"
+  else
+    return 1
+  fi
+}
+
 
 INSTALL_LUA()
 {
@@ -312,7 +338,7 @@ INSTALL_LUA()
 
   _PRINT_TEXT_FORMATTED "Installing ${luaDirName}"
   local luaDir=${_ARR_DIRS["lua_dir"]}
-  _EXEC_CMD cd "${luaDir}"
+  _EXEC_CMD cd "${SRC_DIR}"
   _DOWNLOAD_UNPACK "${luaDirName}" "${archiveName}" "${url}"
 
   _PRINT_TEXT_FORMATTED "Detecting Platform..."
@@ -362,3 +388,134 @@ USE_LUA()
 
   _PRINT_TEXT_FORMATTED "Switched to ${luaName} successfully."
 }
+
+
+# LUAROCKS
+
+USE_LUAROCKS()
+{
+  local version=$1
+  local luarocks_name="luarocks-${version}"
+
+  lua_version=$(_GET_PKG_VERSION_SHORT "lua")
+
+  if [ "${lua_version}" = "" ]
+  then
+    _ERROR "You need to switch to a Lua installer version first."
+  fi
+
+  _PRINT_TEXT_FORMATTED "Switching to ${luarocks_name} with lua version: ${lua_version}"
+
+  _EXEC_CMD cd "${_ARR_DIRS["luarocks_dir"]}"
+
+  if [ ! -e "${version}_${lua_version}" ]
+  then
+    _PRINT_TEXT_FORMATTED "${luarocks_name} is not installed with lua version ${lua_version}. Want to install it? [Y/n]: "
+    read -r choice
+
+    case $choice in
+      [yY][eE][sS] | [yY] )
+        INSTALL_LUAROCKS "${version}"
+        ;;
+      * )
+        _ERROR "Unable to use ${luarocks_name}"
+    esac
+    return
+  fi
+
+  _REMOVE_PREV_PATHS "${_ARR_DIRS["luarocks_dir"]}"
+  _APPEND_PATH "${_ARR_DIRS["luarocks_dir"]}/${version}_${lua_version}/bin"
+
+  eval "$(luarocks path)"
+
+  _PRINT_TEXT_FORMATTED "Successfully switched to ${luarocks_name}"
+
+}
+
+INSTALL_LUAROCKS()
+{
+
+  lua_version=$(_GET_PKG_VERSION "lua")
+  # if [ "" = "${lua_version}" ]
+  # then
+  #   _ERROR "No lua version."
+  # fi
+
+  lua_version_short=$(_GET_PKG_VERSION_SHORT "lua")
+
+  local version=$1
+  local luarocks_dir_name="luarocks-${version}"
+  local archive_name="${luarocks_dir_name}.tar.gz"
+  local url="http://luarocks.org/releases/${archive_name}"
+
+  _PRINT_TEXT_FORMATTED "Installing ${luarocks_dir_name} for lua version ${lua_version}"
+  
+  local luarocksDir=${_ARR_DIRS["luarocks_dir"]}
+  local luaDir=${_ARR_DIRS["lua_dir"]}
+  _EXEC_CMD cd "${SRC_DIR}"
+
+  _DOWNLOAD_UNPACK "${luarocks_dir_name}" "${archive_name}" "${url}"
+
+  _EXEC_CMD cd "${luarocks_dir_name}"
+
+  _PRINT_TEXT_FORMATTED "Compiling ${luarocks_dir_name}"
+  
+  _EXEC_CMD ./configure \
+    --prefix="${luarocksDir}/${version}_${lua_version_short}" \
+    --with-lua="${luaDir}/${lua_version}" \
+    --with-lua-bin="${luaDir}/${lua_version}/bin" \
+    --with-lua-include="${luaDir}/${lua_version}/include" \
+    --with-lua-lib="${luaDir}/${lua_version}/lib" \
+    --versioned-rocks-dir
+
+  _EXEC_CMD make build
+  _EXEC_CMD make install
+
+  _PRINT_TEXT_FORMATTED "${luarocks_dir_name} successfully installer. Switch to this version ? [Y/n]:"
+  read -r choice
+  case $choice in
+    [yY][eE][sS] | [yY] )
+      USE_LUAROCKS "${version}"
+      ;;
+  esac
+}
+
+
+USAGE()
+{
+  _PRINT_TEXT_FORMATTED "MGL Lua Version Manager : ${_VERSION}"
+  
+
+
+}
+
+
+
+RUN()
+{
+  _d_present_dir=$(pwd)
+
+  local cmd="${1}"
+
+  if [ ${#} -gt 0 ]
+  then
+    shift
+  fi
+
+  case $cmd in
+    "help") USAGE;;
+    
+    "install-lua" ) INSTALL_LUA "${@}";;
+    "use-lua" ) USE_LUA "${@}";;
+    
+    "install-luarocks" ) INSTALL_LUAROCKS "${@}";;
+    "install-luarks" ) INSTALL_LUAROCKS "${@}";;
+    "use-luarks" ) USE_LUA "${@}";;
+    "use-luarocks" ) USE_LUA "${@}";;
+    *) USAGE;;
+  esac
+
+}
+
+
+# [ -n "$1" ] && RUN "$@"
